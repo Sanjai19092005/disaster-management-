@@ -1,0 +1,14 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: disaster-app
+
+jena:
+  fuseki:
+    query-url: http://localhost:3030/disaster/query
+    update-url: http://localhost:3030/disaster/update
+    data-url: http://localhost:3030/disaster/data
+    admin-url: http://localhost:3030/$/datasets
+    dataset-name: disaster

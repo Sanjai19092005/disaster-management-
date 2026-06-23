@@ -1,0 +1,11 @@
+# Ignore IDE folders
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Ignore database data volume folders
+/fuseki-data/
+
+# Ignore log files
+*.log

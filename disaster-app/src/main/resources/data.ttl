@@ -1,0 +1,133 @@
+@prefix : <http://disaster.org/ontology#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+### States
+:TamilNadu rdf:type :State .
+:Maharashtra rdf:type :State .
+
+### Districts
+:ChennaiDistrict rdf:type :District ;
+                 :occursIn :TamilNadu .
+
+:MumbaiDistrict rdf:type :District ;
+                :occursIn :Maharashtra .
+
+### Cities / Areas
+:ChennaiCity rdf:type :City ;
+             :occursIn :ChennaiDistrict .
+
+:Mylapore rdf:type :City ;
+          :occursIn :ChennaiDistrict .
+
+:Adyar rdf:type :City ;
+       :occursIn :ChennaiDistrict .
+
+:MumbaiCity rdf:type :City ;
+            :occursIn :MumbaiDistrict .
+
+:Bandra rdf:type :City ;
+        :occursIn :MumbaiDistrict .
+
+### Road Connections (for pathfinding routing suggestions)
+# Chennai network:
+# ChennaiCity <---> Mylapore (4.5 km, Clear)
+# Mylapore <---> Adyar (3.2 km, Flooded / Blocked)
+# ChennaiCity <---> Adyar (6.0 km, Clear)
+
+:conn1 rdf:type owl:Thing ;
+       :connectedTo :ChennaiCity ;
+       :connectedTo :Mylapore ;
+       :distance 4.5 ;
+       :status "Clear" .
+
+:conn2 rdf:type owl:Thing ;
+       :connectedTo :Mylapore ;
+       :connectedTo :Adyar ;
+       :distance 3.2 ;
+       :status "Flooded" .
+
+:conn3 rdf:type owl:Thing ;
+       :connectedTo :ChennaiCity ;
+       :connectedTo :Adyar ;
+       :distance 6.0 ;
+       :status "Clear" .
+
+# Mumbai network:
+:conn4 rdf:type owl:Thing ;
+       :connectedTo :MumbaiCity ;
+       :connectedTo :Bandra ;
+       :distance 8.5 ;
+       :status "Clear" .
+
+### Resources
+:FoodPackets rdf:type :Food .
+:WaterBottles rdf:type :Water .
+:MedicalKits rdf:type :Medicine .
+
+### Agencies
+:NDRF rdf:type :GovernmentAgency ;
+      :providesResource :FoodPackets ;
+      :providesResource :WaterBottles ;
+      :locatedAt :ChennaiCity .
+
+:RedCross rdf:type :NGO ;
+          :providesResource :FoodPackets ;
+          :providesResource :WaterBottles ;
+          :providesResource :MedicalKits ;
+          :locatedAt :ChennaiCity .
+
+:GovtMedicalCorps rdf:type :GovernmentAgency ;
+                  :providesResource :MedicalKits ;
+                  :locatedAt :Mylapore .
+
+:MumbaiRescue rdf:type :RescueTeam ;
+              :providesResource :FoodPackets ;
+              :providesResource :WaterBottles ;
+              :locatedAt :Bandra .
+
+:NGOAid rdf:type :NGO ;
+        :providesResource :FoodPackets ;
+        :locatedAt :MumbaiCity .
+
+### Shelters & Hospitals
+:ChennaiReliefCenter rdf:type :ReliefCenter ;
+                     :capacity 500 ;
+                     :locatedAt :ChennaiCity ;
+                     :managedBy :RedCross .
+
+:MylaporeHospital rdf:type :Hospital ;
+                  :capacity 150 ;
+                  :locatedAt :Mylapore ;
+                  :managedBy :GovtMedicalCorps .
+
+:BandraShelter rdf:type :ReliefCenter ;
+               :capacity 300 ;
+               :locatedAt :Bandra ;
+               :managedBy :MumbaiRescue .
+
+### Disasters
+:ChennaiFlood2026 rdf:type :Flood ;
+                  :occursIn :ChennaiCity ;
+                  :affects :ChennaiDistrict ;
+                  :requiresResource :FoodPackets ;
+                  :requiresResource :WaterBottles ;
+                  :requiresResource :MedicalKits ;
+                  :respondedBy :NDRF ;
+                  :respondedBy :RedCross .
+
+:MumbaiMonsoon2026 rdf:type :Flood ;
+                   :occursIn :MumbaiCity ;
+                   :affects :MumbaiDistrict ;
+                   :requiresResource :FoodPackets ;
+                   :requiresResource :WaterBottles ;
+                   :respondedBy :MumbaiRescue ;
+                   :respondedBy :NGOAid .
+
+:LaturEarthquake2026 rdf:type :Earthquake ;
+                     :occursIn :Maharashtra ;
+                     :requiresResource :MedicalKits ;
+                     :requiresResource :WaterBottles .

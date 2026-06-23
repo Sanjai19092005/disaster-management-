@@ -1,0 +1,88 @@
+@prefix : <http://disaster.org/ontology#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<http://disaster.org/ontology> rdf:type owl:Ontology .
+
+### Classes
+
+:Disaster rdf:type owl:Class .
+:Flood rdf:type owl:Class ; rdfs:subClassOf :Disaster .
+:Earthquake rdf:type owl:Class ; rdfs:subClassOf :Disaster .
+:Cyclone rdf:type owl:Class ; rdfs:subClassOf :Disaster .
+:Wildfire rdf:type owl:Class ; rdfs:subClassOf :Disaster .
+
+:Location rdf:type owl:Class .
+:State rdf:type owl:Class ; rdfs:subClassOf :Location .
+:District rdf:type owl:Class ; rdfs:subClassOf :Location .
+:City rdf:type owl:Class ; rdfs:subClassOf :Location .
+
+:Shelter rdf:type owl:Class .
+:Hospital rdf:type owl:Class ; rdfs:subClassOf :Shelter .
+:ReliefCenter rdf:type owl:Class ; rdfs:subClassOf :Shelter .
+
+:Resource rdf:type owl:Class .
+:Food rdf:type owl:Class ; rdfs:subClassOf :Resource .
+:Water rdf:type owl:Class ; rdfs:subClassOf :Resource .
+:Medicine rdf:type owl:Class ; rdfs:subClassOf :Resource .
+
+:Agency rdf:type owl:Class .
+:NGO rdf:type owl:Class ; rdfs:subClassOf :Agency .
+:GovernmentAgency rdf:type owl:Class ; rdfs:subClassOf :Agency .
+:RescueTeam rdf:type owl:Class ; rdfs:subClassOf :Agency .
+
+### Object Properties
+
+:occursIn rdf:type owl:ObjectProperty ;
+          rdfs:domain :Disaster ;
+          rdfs:range :Location .
+
+:affects rdf:type owl:ObjectProperty ;
+         rdfs:domain :Disaster ;
+         rdfs:range :Location .
+
+:hasShelter rdf:type owl:ObjectProperty ;
+            rdfs:domain :Location ;
+            rdfs:range :Shelter .
+
+:hasHospital rdf:type owl:ObjectProperty ;
+             rdfs:domain :Location ;
+             rdfs:range :Hospital .
+
+:managedBy rdf:type owl:ObjectProperty ;
+           rdfs:domain :Shelter ;
+           rdfs:range :Agency .
+
+:requiresResource rdf:type owl:ObjectProperty ;
+                  rdfs:domain :Disaster ;
+                  rdfs:range :Resource .
+
+:providesResource rdf:type owl:ObjectProperty ;
+                  rdfs:domain :Agency ;
+                  rdfs:range :Resource .
+
+:locatedAt rdf:type owl:ObjectProperty ;
+           rdfs:range :Location .
+
+:respondedBy rdf:type owl:ObjectProperty ;
+             rdfs:domain :Disaster ;
+             rdfs:range :Agency .
+
+:connectedTo rdf:type owl:ObjectProperty ;
+             rdfs:domain :Location ;
+             rdfs:range :Location .
+
+### Data Properties
+
+:distance rdf:type owl:DatatypeProperty ;
+          rdfs:range xsd:double .
+
+:status rdf:type owl:DatatypeProperty ;
+        rdfs:range xsd:string .
+
+:capacity rdf:type owl:DatatypeProperty ;
+          rdfs:domain :Shelter ;
+          rdfs:range xsd:integer .

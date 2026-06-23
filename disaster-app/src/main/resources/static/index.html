@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disaster Management Knowledge Graph</title>
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Chart.js and Cytoscape.js CDNs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.26.0/cytoscape.min.js"></script>
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="app-header">
+    <div class="logo-container">
+      <div class="logo-icon">
+        <i class="fa-solid fa-circle-nodes"></i>
+      </div>
+      <div>
+        <h1 class="logo-text">DisasterSemantics</h1>
+      </div>
+    </div>
+    <div class="connection-status">
+      <div class="status-item">
+        <span class="status-dot online" id="backend-status-dot"></span>
+        <span>Spring Boot: <strong id="backend-status-text">Connecting...</strong></span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot online" id="fuseki-status-dot"></span>
+        <span>Jena Fuseki: <strong id="fuseki-status-text">Connecting...</strong></span>
+      </div>
+      <div class="status-item">
+        <span>Triples: <strong id="triple-count" class="text-primary">0</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- App Body Container -->
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <a class="nav-item active" data-target="dashboard">
+        <i class="fa-solid fa-chart-line"></i>
+        <span>Dashboard</span>
+      </a>
+      <a class="nav-item" data-target="knowledge-graph" id="nav-graph-btn">
+        <i class="fa-solid fa-network-wired"></i>
+        <span>Knowledge Graph</span>
+      </a>
+      <a class="nav-item" data-target="sparql-playground">
+        <i class="fa-solid fa-terminal"></i>
+        <span>SPARQL Playground</span>
+      </a>
+      <a class="nav-item" data-target="ops-room">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>Emergency Ops Room</span>
+      </a>
+      <a class="nav-item" data-target="predictions">
+        <i class="fa-solid fa-cloud-bolt"></i>
+        <span>Risk & Weather</span>
+      </a>
+    </nav>
+
+    <!-- Content Pane -->
+    <main class="content-pane">
+      
+      <!-- 1. Dashboard View -->
+      <section id="dashboard" class="view-section active">
+        <h2 class="section-title"><i class="fa-solid fa-chart-pie color-primary"></i> Dashboard Analytics</h2>
+        <div class="card-grid">
+          <div class="metric-card danger">
+            <span class="metric-title">Active Disasters</span>
+            <span class="metric-value" id="stat-disasters">0</span>
+          </div>
+          <div class="metric-card success">
+            <span class="metric-title">Emergency Shelters</span>
+            <span class="metric-value" id="stat-shelters">0</span>
+          </div>
+          <div class="metric-card primary">
+            <span class="metric-title">Total Shelter Capacity</span>
+            <span class="metric-value" id="stat-capacity">0</span>
+          </div>
+          <div class="metric-card warning">
+            <span class="metric-title">Rescue Agencies</span>
+            <span class="metric-value" id="stat-agencies">0</span>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- Resource Distribution Chart -->
+          <div class="chart-container">
+            <h3 class="section-title"><i class="fa-solid fa-boxes-stacked"></i> Relief Resource Capabilities</h3>
+            <canvas id="resourceChart"></canvas>
+          </div>
+          <!-- Recent Weather Alerts Mock Feed -->
+          <div class="chart-container">
+            <h3 class="section-title"><i class="fa-solid fa-bell"></i> Live Operations Alert Feed</h3>
+            <div id="alerts-feed">
+              <div class="status-item" style="border-left: 3px solid var(--color-danger); border-radius: 0; background: rgba(255,0,91,0.05); margin-bottom: 0.5rem; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
+                <span class="badge red">CRITICAL ALERT</span>
+                <span style="font-size: 0.8rem; color: #fff;">Chennai flood requires urgent Food and Medicine resource allocation.</span>
+              </div>
+              <div class="status-item" style="border-left: 3px solid var(--color-warning); border-radius: 0; background: rgba(255,208,0,0.05); margin-bottom: 0.5rem; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
+                <span class="badge yellow">WEATHER WATCH</span>
+                <span style="font-size: 0.8rem; color: #fff;">Mumbai region: Moderate monsoons. Shelters prepared for high-tide evacuations.</span>
+              </div>
+              <div class="status-item" style="border-left: 3px solid var(--color-success); border-radius: 0; background: rgba(0,255,135,0.05); flex-direction: column; align-items: flex-start; gap: 0.25rem;">
+                <span class="badge green">AGENCY ACTIVE</span>
+                <span style="font-size: 0.8rem; color: #fff;">NDRF deployed to Chennai City relief base camp with 500 food packets.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Knowledge Graph View -->
+      <section id="knowledge-graph" class="view-section">
+        <h2 class="section-title"><i class="fa-solid fa-circle-nodes color-primary"></i> Semantic Knowledge Graph Visualizer</h2>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: -10px;">
+          Interactive view of RDF triples in Jena Fuseki. Nodes are classes/instances. Drag to inspect properties.
+        </p>
+
+        <div class="graph-viewport-container">
+          <!-- Canvas -->
+          <div class="graph-canvas-wrapper">
+            <div class="graph-toolbar">
+              <button id="btn-fit"><i class="fa-solid fa-expand"></i> Fit</button>
+              <button id="btn-layout-cose"><i class="fa-solid fa-grip"></i> Cose Layout</button>
+              <button id="btn-layout-concentric"><i class="fa-solid fa-circle-notch"></i> Concentric</button>
+              <button id="btn-refresh-graph"><i class="fa-solid fa-rotate"></i> Reload Graph</button>
+            </div>
+            
+            <div class="legend-overlay">
+              <div class="legend-item"><span class="legend-color" style="background-color: var(--color-danger);"></span><span>Disaster</span></div>
+              <div class="legend-item"><span class="legend-color" style="background-color: var(--color-success);"></span><span>Location</span></div>
+              <div class="legend-item"><span class="legend-color" style="background-color: var(--color-primary);"></span><span>Agency</span></div>
+              <div class="legend-item"><span class="legend-color" style="background-color: var(--color-warning);"></span><span>Resource</span></div>
+              <div class="legend-item"><span class="legend-color" style="background-color: var(--color-purple);"></span><span>Shelter / Hospital</span></div>
+              <div class="legend-item"><span class="legend-color" style="background-color: #64748b;"></span><span>Other / Predicted</span></div>
+            </div>
+
+            <div id="cy"></div>
+          </div>
+
+          <!-- Inspector Panel -->
+          <div class="inspector-panel">
+            <h3 class="inspector-title" id="inspector-node-title">Select a Node</h3>
+            <div id="inspector-node-type" class="badge" style="display: none; align-self: flex-start;"></div>
+            
+            <div id="inspector-properties" style="margin-top: 1rem;">
+              <p style="color: var(--text-secondary); font-size: 0.9rem; font-style: italic;">
+                Click on any node to inspect its RDF attributes and relations.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. SPARQL Playground View -->
+      <section id="sparql-playground" class="view-section">
+        <h2 class="section-title"><i class="fa-solid fa-terminal color-primary"></i> SPARQL Query Interface</h2>
+        <div class="sparql-grid">
+          <!-- Sidebar Templates -->
+          <div class="sparql-sidebar">
+            <h3 class="section-title" style="font-size: 1rem;"><i class="fa-solid fa-folder-open"></i> Query Templates</h3>
+            <div class="form-group">
+              <label for="template-select">Select predefined SPARQL query:</label>
+              <select id="template-select" class="query-select">
+                <option value="all-triples">1. Retrieve All Triples (Limit 50)</option>
+                <option value="find-shelters">2. Find Available Shelters & Capacities</option>
+                <option value="find-hospitals">3. Find Hospitals in Chennai region</option>
+                <option value="find-resources">4. Find Resources Required for Chennai Flood</option>
+                <option value="find-agencies">5. Find Agencies & Resources they Provide</option>
+                <option value="find-roads">6. Query Road Network Connections</option>
+              </select>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.8rem; line-height: 1.4;">
+              Modify queries in the editor or write your own. Use prefix namespaces declared above.
+            </p>
+          </div>
+
+          <!-- Query Editor -->
+          <div class="sparql-editor-wrapper">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h3 class="section-title" style="font-size: 1rem; margin-bottom: 0;"><i class="fa-solid fa-code"></i> Editor</h3>
+              <button class="btn" id="btn-run-query"><i class="fa-solid fa-play"></i> Run Query</button>
+            </div>
+            <textarea id="sparql-editor" class="sparql-textarea" spellcheck="false"></textarea>
+          </div>
+        </div>
+
+        <!-- Query Results -->
+        <div class="results-card">
+          <h3 class="section-title" style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <span><i class="fa-solid fa-table-list"></i> Query Results</span>
+            <span id="results-count" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: normal;">0 rows returned</span>
+          </h3>
+          <div class="table-responsive">
+            <table class="data-table" id="results-table">
+              <thead>
+                <tr id="results-headers">
+                  <th>Run a query to view results...</th>
+                </tr>
+              </thead>
+              <tbody id="results-body">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Emergency Ops Room View -->
+      <section id="ops-room" class="view-section">
+        <h2 class="section-title"><i class="fa-solid fa-shield-halved color-primary"></i> Emergency Operations Room</h2>
+        <div class="ops-grid">
+          
+          <!-- Resource Recommendation Engine -->
+          <div class="ops-card">
+            <h3 class="section-title"><i class="fa-solid fa-hand-holding-hand color-primary"></i> Resource Recommendation</h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: -10px;">
+              Ontological reasoning engine matches active disaster requirements with rescue agency capabilities.
+            </p>
+            
+            <div class="form-group">
+              <label for="recommend-disaster-select">Select Active Disaster:</label>
+              <select id="recommend-disaster-select" class="form-control">
+                <option value="http://disaster.org/ontology#ChennaiFlood2026">Chennai Flood 2026</option>
+                <option value="http://disaster.org/ontology#MumbaiMonsoon2026">Mumbai Monsoon 2026</option>
+                <option value="http://disaster.org/ontology#LaturEarthquake2026">Latur Earthquake 2026</option>
+              </select>
+            </div>
+
+            <button class="btn" id="btn-recommend"><i class="fa-solid fa-gears"></i> Run Recommendation Query</button>
+
+            <div class="form-group">
+              <label>Recommended Responding Agencies:</label>
+              <div id="recommend-results" class="results-box">
+                <span class="text-secondary" style="font-style: italic;">No recommendations run yet.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Emergency Route Suggestions -->
+          <div class="ops-card">
+            <h3 class="section-title"><i class="fa-solid fa-route color-primary"></i> Emergency Route Suggestions</h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: -10px;">
+              Calculates navigable paths between locations, using semantic graphs and avoiding blocked roads.
+            </p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label for="route-start-select">Start Point (Agency/Relief):</label>
+                <select id="route-start-select" class="form-control">
+                  <option value="http://disaster.org/ontology#ChennaiCity">Chennai City Base (NDRF/RedCross)</option>
+                  <option value="http://disaster.org/ontology#Mylapore">Mylapore Hospital Base</option>
+                  <option value="http://disaster.org/ontology#Adyar">Adyar City Sector</option>
+                  <option value="http://disaster.org/ontology#MumbaiCity">Mumbai City Base</option>
+                  <option value="http://disaster.org/ontology#Bandra">Bandra Camp Base</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="route-end-select">Destination (Shelter/Target):</label>
+                <select id="route-end-select" class="form-control">
+                  <option value="http://disaster.org/ontology#Adyar">Adyar City Sector</option>
+                  <option value="http://disaster.org/ontology#Mylapore">Mylapore Hospital Base</option>
+                  <option value="http://disaster.org/ontology#ChennaiCity">Chennai City Base</option>
+                  <option value="http://disaster.org/ontology#Bandra">Bandra Camp Base</option>
+                  <option value="http://disaster.org/ontology#MumbaiCity">Mumbai City Base</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="checkbox-group">
+              <input type="checkbox" id="route-avoid-blocked" checked>
+              <label for="route-avoid-blocked">Avoid Flooded / Blocked Roads (Reasoning Path)</label>
+            </div>
+
+            <button class="btn" id="btn-route"><i class="fa-solid fa-compass"></i> Calculate Safe Route</button>
+
+            <div class="form-group">
+              <label>Optimal Navigation Route:</label>
+              <div id="route-results" class="results-box">
+                <span class="text-secondary" style="font-style: italic;">No path calculated yet.</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 5. Predictions & Weather View -->
+      <section id="predictions" class="view-section">
+        <h2 class="section-title"><i class="fa-solid fa-cloud-bolt color-primary"></i> Risk Simulation & Live Weather Alerts</h2>
+        
+        <div class="ops-grid">
+          <!-- Weather API alerts -->
+          <div class="ops-card">
+            <h3 class="section-title"><i class="fa-solid fa-cloud-showers-heavy"></i> Real-time Weather Integration</h3>
+            <div class="form-group">
+              <label for="weather-city-select">Select Alert City:</label>
+              <select id="weather-city-select" class="form-control">
+                <option value="Chennai">Chennai</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Delhi">Delhi</option>
+              </select>
+            </div>
+            
+            <div id="weather-details" class="weather-card">
+              <div class="weather-header">
+                <span style="font-weight: 600; font-size: 1.1rem;" id="weather-city-name">Chennai</span>
+                <span class="badge orange" id="weather-alert-badge">Orange Alert</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="weather-temp" id="weather-temp">29°C</div>
+                <div style="text-align: right; font-size: 0.9rem; color: var(--text-secondary);">
+                  <div id="weather-cond">Heavy Thunderstorms</div>
+                  <div>Wind: <span id="weather-wind" style="color: #fff;">24 km/h</span></div>
+                  <div>Humidity: <span id="weather-humid" style="color: #fff;">92%</span></div>
+                </div>
+              </div>
+              <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.5rem; font-size: 0.85rem; color: #fff;" id="weather-msg">
+                Severe rainfall warning for the next 24 hours. High risk of localized coastal flooding.
+              </div>
+            </div>
+          </div>
+
+          <!-- Disaster Prediction Risk Engine -->
+          <div class="ops-card">
+            <h3 class="section-title"><i class="fa-solid fa-microchip"></i> Disaster Predictive Risk Engine</h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: -10px;">
+              Input sensor data and simulate risk. High risks will inject reasoning RDF triples directly into Fuseki.
+            </p>
+
+            <div class="form-group">
+              <label for="predict-city-select">Select Simulation Region:</label>
+              <select id="predict-city-select" class="form-control">
+                <option value="http://disaster.org/ontology#ChennaiCity">Chennai City</option>
+                <option value="http://disaster.org/ontology#MumbaiCity">Mumbai City</option>
+                <option value="http://disaster.org/ontology#Mylapore">Mylapore</option>
+              </select>
+            </div>
+
+            <!-- Rainfall Slider -->
+            <div class="slider-group">
+              <div class="slider-labels">
+                <span>Rainfall (24h)</span>
+                <span id="label-rainfall">120 mm</span>
+              </div>
+              <input type="range" id="slider-rainfall" min="0" max="300" value="120" step="5">
+            </div>
+
+            <!-- Water Level Slider -->
+            <div class="slider-group">
+              <div class="slider-labels">
+                <span>Water Level (River/Reservoir)</span>
+                <span id="label-water">3.2 m</span>
+              </div>
+              <input type="range" id="slider-water" min="0" max="8" value="3.2" step="0.1">
+            </div>
+
+            <!-- Seismic Activity Slider -->
+            <div class="slider-group">
+              <div class="slider-labels">
+                <span>Seismic Activity (g-force)</span>
+                <span id="label-seismic">1.2 g</span>
+              </div>
+              <input type="range" id="slider-seismic" min="0.0" max="8.0" value="1.2" step="0.1">
+            </div>
+
+            <button class="btn" id="btn-predict"><i class="fa-solid fa-bolt"></i> Simulate Risk & Inject Triples</button>
+
+            <!-- Results Alert -->
+            <div id="prediction-result-panel" class="prediction-alert Medium" style="display: none;">
+              <span style="font-weight: bold; color: #fff;">Result: <span id="predict-result-level">Medium Risk</span></span>
+              <span style="font-size: 0.8rem;" id="predict-result-cause">Rising water levels and moderate rain. Local waterlogging possible.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- App Main Logic -->
+  <script src="js/app.js"></script>
+</body>
+</html>
