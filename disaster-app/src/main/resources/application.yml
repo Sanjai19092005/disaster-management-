@@ -7,8 +7,8 @@ spring:
 
 jena:
   fuseki:
-    query-url: http://localhost:3030/disaster/query
-    update-url: http://localhost:3030/disaster/update
-    data-url: http://localhost:3030/disaster/data
-    admin-url: http://localhost:3030/$/datasets
+    query-url: ${FUSEKI_URL:http://localhost:3030}/disaster/query
+    update-url: ${FUSEKI_URL:http://localhost:3030}/disaster/update
+    data-url: ${FUSEKI_URL:http://localhost:3030}/disaster/data
+    admin-url: ${FUSEKI_URL:http://localhost:3030}/$/datasets
     dataset-name: disaster
